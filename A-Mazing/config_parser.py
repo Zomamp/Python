@@ -6,13 +6,15 @@
 #                                                      +:+ +:+         +:+    #
 #   By: zo-rakot <zo-rakot@student.42antananarivo.   +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
-#   Created: 2026/06/11 21:15:25 by zo-rakot            #+#    #+#            #
-#   Updated: 2026/06/12 00:40:09 by zo-rakot           ###   ########.fr      #
+#   Created: 2026/06/18 05:29:06 by zo-rakot            #+#    #+#            #
+#   Updated: 2026/06/18 05:29:07 by zo-rakot           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
+#!/usr/bin/env python3
 
-class Config_parser():
+class ConfigParser:
+    """Parse and validate maze configuration"""
 
     REQUIRE_KEYS = [
         "WIDTH",
@@ -21,39 +23,80 @@ class Config_parser():
         "EXIT",
         "OUTPUT_FILE",
         "PERFECT"
-        ]
+    ]
 
     def __init__(self, filepath: str) -> None:
         self.filepath = filepath
         self.storage: dict = {}
 
-    def parse_file_open(self) -> dict:
+    def parse_coord(self, value: str) -> tuple[int, int]:
+        parts = value.split(",")
+
+        if len(parts) != 2:
+            raise ValueError(f"Invalid coord format: {value}")
+
+        x, y = parts
+
+        try:
+            return int(x), int(y)
+        except ValueError:
+            raise ValueError(f"Invalid integer in coord: {value}")
+
+    def parse_file(self) -> dict:
         try:
             with open(self.filepath, "r") as f:
-                for lign in f:
-                    lign = lign.strip()
+                for line in f:
+                    line = line.strip()
 
-                    if not lign or lign.startswith("#"):
+                    if not line or line.startswith("#"):
                         continue
 
-                    if "=" not in lign:
-                        raise Exception("Error not in lign")
+                    if "=" not in line:
+                        raise ValueError(f"Invalid line: {line}")
 
-                    key, value = lign.split("=", 1)
-                    self.storage[key.strip()] = value.strip()
+                    key, value = line.split("=", 1)
+                    key = key.strip()
+                    value = value.strip()
+
+                    if key in ["WIDTH", "HEIGHT"]:
+                        try:
+                            self.storage[key] = int(value)
+                        except ValueError:
+                            raise ValueError(f"Invalid int for {key}: {value}")
+
+                    elif key in ["ENTRY", "EXIT"]:
+                        self.storage[key] = self.parse_coord(value)
+
+                    elif key == "PERFECT":
+                        self.storage[key] = value.lower() == "true"
+
+                    else:
+                        self.storage[key] = value
+
             self.validate()
+            return self.storage
 
-        except Exception as e:
-            print(f"Error: {e}")
+        except FileNotFoundError:
+            raise FileNotFoundError("Config file not found")
 
-        return (self.storage)
-
-    def validate(self):
+    def validate(self) -> None:
+        # check required keys
         for key in self.REQUIRE_KEYS:
             if key not in self.storage:
-                raise Exception(f"Error the key is incomplete {key}")
+                raise ValueError(f"Missing key: {key}")
 
+        # bounds validation
+        width = self.storage["WIDTH"]
+        height = self.storage["HEIGHT"]
 
-if __name__ == "__main__":
-    appel = Config_parser("config.txt")
-    appel.parse_file_open()
+        entry_x, entry_y = self.storage["ENTRY"]
+        exit_x, exit_y = self.storage["EXIT"]
+
+        if not (0 <= entry_x < width and 0 <= entry_y < height):
+            raise ValueError("ENTRY out of bounds")
+
+        if not (0 <= exit_x < width and 0 <= exit_y < height):
+            raise ValueError("EXIT out of bounds")
+
+        if (entry_x, entry_y) == (exit_x, exit_y):
+            raise ValueError("ENTRY and EXIT must be different")
