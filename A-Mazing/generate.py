@@ -6,35 +6,40 @@
 #                                                      +:+ +:+         +:+    #
 #   By: zo-rakot <zo-rakot@student.42antananarivo.   +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
-#   Created: 2026/06/12 02:02:49 by zo-rakot            #+#    #+#            #
-#   Updated: 2026/06/18 04:53:39 by zo-rakot           ###   ########.fr      #
+#   Created: 2026/06/23 01:04:03 by zo-rakot            #+#    #+#            #
+#   Updated: 2026/06/23 02:44:17 by zo-rakot           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
 import random
-from maze import Maze
+import time
 
+def clear():
+    print("\033[H\033[J", end="")
 
-def generate(maze: Maze) -> None:
-    current = maze.getCell(0, 0)
-    current.visited = True
+def generate(maze, delay=0.001):
+    start = maze.getCell(0, 0)
+    start.visited = True
+
     stack = []
+    current = start
 
     while True:
         neighbors = maze.getNeighbors(current)
 
         if neighbors:
-            direction, next_cell = random.choice(neighbors)
-
-            maze.removeWall(current, next_cell, direction)
+            direction, nxt = random.choice(neighbors)
+            maze.removeWall(current, nxt, direction)
 
             stack.append(current)
-
-            current = next_cell
+            current = nxt
             current.visited = True
 
         elif stack:
             current = stack.pop()
-
         else:
             break
+
+        clear()
+        maze.display()
+        time.sleep(delay)
