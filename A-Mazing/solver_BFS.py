@@ -2,38 +2,41 @@
 # ########################################################################### #
 #   shebang: 1                                                                #
 #                                                          :::      ::::::::  #
-#   solver.py                                            :+:      :+:    :+:  #
+#   solver_BFS.py                                        :+:      :+:    :+:  #
 #                                                      +:+ +:+         +:+    #
 #   By: zo-rakot <zo-rakot@student.42antananarivo.   +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
-#   Created: 2026/06/23 05:52:48 by zo-rakot            #+#    #+#            #
-#   Updated: 2026/06/24 22:29:52 by zo-rakot           ###   ########.fr      #
+#   Created: 2026/06/25 03:23:13 by zo-rakot            #+#    #+#            #
+#   Updated: 2026/06/25 03:23:14 by zo-rakot           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
+from collections import deque
 import time
 
 def clear():
     print("\033[H\033[J", end="")
 
 
-def solve(maze, delay=0.04):
+def solve_bfs(maze, delay=0.04):
     maze.reset_visited()
 
-    stack = []
+    queue = deque()
     parent = {}
 
     start = maze.start
     end = maze.end
 
-    current = start
-    current.visited = True
+    start.visited = True
+    queue.append(start)
 
     try:
-        while True:
+        while queue:
             clear()
             maze.display()
             time.sleep(delay)
+
+            current = queue.popleft()
 
             if current == end:
                 break
@@ -42,37 +45,38 @@ def solve(maze, delay=0.04):
 
             neighbors = []
 
+            # Nord
             if not current.coord["N"]:
                 n = maze.getCell(x, y - 1)
                 if n and not n.visited:
                     neighbors.append(n)
 
+            # Sud
             if not current.coord["S"]:
                 s = maze.getCell(x, y + 1)
                 if s and not s.visited:
                     neighbors.append(s)
 
+            # Est
             if not current.coord["E"]:
                 e = maze.getCell(x + 1, y)
                 if e and not e.visited:
                     neighbors.append(e)
 
+            # Ouest
             if not current.coord["W"]:
                 w = maze.getCell(x - 1, y)
                 if w and not w.visited:
                     neighbors.append(w)
 
-            if neighbors:
-                stack.append(current)
-                nxt = neighbors[0]   #FIX : déterministe (au lieu de random)
-                parent[nxt] = current
-                current = nxt
-                current.visited = True
+            for nxt in neighbors:
+                if not nxt.visited:
+                    nxt.visited = True
+                    parent[nxt] = current
+                    queue.append(nxt)
 
-            elif stack:
-                current = stack.pop()
-            else:
-                return None
+        else:
+            return None  # pas de solution
 
     except KeyboardInterrupt:
         input("\rYou Interrupt the program, tap Enter to continue")
@@ -82,6 +86,11 @@ def solve(maze, delay=0.04):
     # reconstruction du path
     # =========================
     path = []
+    current = end
+
+    if current not in parent and current != start:
+        return None
+
     while current != start:
         path.append(current)
         current = parent[current]
@@ -90,7 +99,7 @@ def solve(maze, delay=0.04):
     path.reverse()
 
     # =========================
-    # animation finale propre
+    # animation finale
     # =========================
     for i in range(len(path)):
         clear()

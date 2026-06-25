@@ -7,7 +7,7 @@
 #   By: zo-rakot <zo-rakot@student.42antananarivo.   +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/06/18 05:29:06 by zo-rakot            #+#    #+#            #
-#   Updated: 2026/06/22 23:59:33 by zo-rakot           ###   ########.fr      #
+#   Updated: 2026/06/24 20:19:57 by zo-rakot           ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -34,6 +34,11 @@ class ConfigParser:
 
         if len(parts) != 2:
             raise ValueError(f"Invalid coord format: {value}")
+        try:
+            if not self.REQUIRE_KEYS:
+                raise Exception("Error REQUIRE_KEY missing")
+        except Exception as error:
+            print(error)
 
         x, y = parts
 
@@ -41,6 +46,34 @@ class ConfigParser:
             return int(x), int(y)
         except ValueError:
             raise ValueError(f"Invalid integer in coord: {value}")
+
+    def validate(self) -> None:
+        # check required keys
+        for key in self.REQUIRE_KEYS:
+            try:
+                if key not in self.storage:
+                    raise ValueError(f"Missing key: {key}")
+
+            except ValueError as error:
+                print(error)
+                return (None)
+
+        # bounds validation
+        width = self.storage["WIDTH"]
+        height = self.storage["HEIGHT"]
+
+        entry_x, entry_y = self.storage["ENTRY"]
+        exit_x, exit_y = self.storage["EXIT"]
+
+        if not (0 <= entry_x < width and 0 <= entry_y < height):
+            raise ValueError("ENTRY out of bounds")
+
+        if not (0 <= exit_x < width and 0 <= exit_y < height):
+            raise ValueError("EXIT out of bounds")
+
+        if (entry_x, entry_y) == (exit_x, exit_y):
+            raise ValueError("ENTRY and EXIT must be different")
+
 
     def parse_file(self) -> dict:
         try:
@@ -79,24 +112,3 @@ class ConfigParser:
         except FileNotFoundError:
             raise FileNotFoundError("Config file not found")
 
-    def validate(self) -> None:
-        # check required keys
-        for key in self.REQUIRE_KEYS:
-            if key not in self.storage:
-                raise ValueError(f"Missing key: {key}")
-
-        # bounds validation
-        width = self.storage["WIDTH"]
-        height = self.storage["HEIGHT"]
-
-        entry_x, entry_y = self.storage["ENTRY"]
-        exit_x, exit_y = self.storage["EXIT"]
-
-        if not (0 <= entry_x < width and 0 <= entry_y < height):
-            raise ValueError("ENTRY out of bounds")
-
-        if not (0 <= exit_x < width and 0 <= exit_y < height):
-            raise ValueError("EXIT out of bounds")
-
-        if (entry_x, entry_y) == (exit_x, exit_y):
-            raise ValueError("ENTRY and EXIT must be different")
