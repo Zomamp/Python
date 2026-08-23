@@ -1,19 +1,9 @@
 from llm_sdk import Small_LLM_Model
-import time
 import json
 
 
 if __name__ == "__main__":
     try:
-        print("We need to answer this question")
-        time.sleep(0.5)
-        print("\rPlease wait .", end="", flush=True)
-        time.sleep(0.5)
-        print("\rPlease wait ..", end="", flush=True)
-        time.sleep(0.5)
-        print("\rPlease wait ...", end="", flush=True)
-
-        print()
 
         # Debut de mon petit llm
         # instance de la class
@@ -32,10 +22,15 @@ if __name__ == "__main__":
         #     user_request = user[item]
 
         # Test de boucle pour voir si la liste sera parcourue ou pas
+
+        # Stockage pour rendu de JSON valide
+        results = []
+        with open("./output/output.json", "w") as output:
+            output.write("")
         for i in user_request:
 
             prompts = i["prompt"]
-            ex = '{"prompt": "What is the sum of 2 and 3?","name": "fn_add_numbers","parameters": {"a": 2.0, "b": 3.0}, "returns": 5.0}'
+            ex = '{"name": "fn_add_numbers","parameters": {"a": 2.0, "b": 3.0}, "result": {"resultat": 5.0} '
             # Add of the little prompt test
             prompt = f"""
             Your task is to select the appropriate function from the available functions
@@ -60,9 +55,12 @@ if __name__ == "__main__":
             # Creation d'une petite boucle
             # deja_lu = []
             stockage = ""
+            # decoder seulement si necessaire
+            generated_token = []
             json_started = False
+            print(f"\nPrompt: {i["prompt"]}")
             try:
-                for _ in range(60):
+                for _ in range(90):
                     # # Test de logit
                     logit = src.get_logits_from_input_ids(token)
                     # print(logit)
@@ -73,16 +71,14 @@ if __name__ == "__main__":
                     #     scoring[efa_ao] -= 2.0
 
                     # Choix du meilleur next token possible
-                    next_best_token = max(
-                        range(len(logit)),
-                        key=lambda i: logit[i]
-                    )
+                    next_best_token = max(range(len(logit)), key=logit.__getitem__)
 
                     # Ajout du nouveau token dans token variable
                     token.append(next_best_token)
                     # deja_lu.append(next_best_token)
                     # decode du next token car on veux pas de ID mais de mot
                     decodage_next = src.decode([next_best_token])
+                    generated_token.append(next_best_token)
 
                     # On attend le premier {
                     if not json_started:
@@ -93,11 +89,16 @@ if __name__ == "__main__":
 
                     # print(next_best_token)
                     # Generation d prochain token baby
-                    stockage += decodage_next
-                    print(decodage_next, end="", flush=True)
+                    stockage += src.decode(next_best_token)
+                    # print(decodage_next, end="", flush=True)
                     try:
                         result = json.loads(stockage)
+                        results.append(result)
                         print(f"\n\033[034m{json.dumps(result, indent=2)}\033[0m")
+
+                        # Ecris dans un fichier .json
+                        with open("./output/output.json", "w") as output:
+                            json.dump(results, output, indent=2)
 
                         break
 
