@@ -4,111 +4,82 @@ import json
 
 if __name__ == "__main__":
     try:
-
-        # Debut de mon petit llm
-        # instance de la class
-
         src = Small_LLM_Model()
-        # Mapiditra anle json
+
         with open("./data/input/functions_definition.json", "r") as file:
             data = json.load(file)
 
-        # User request lesy zanjy ah
-        with open("./prompt/prompt.json", "r") as dir:
-            user_request  = json.load(dir)
+        with open("./prompt/prompt.json", "r") as file:
+            user_requests = json.load(file)
 
-        # # Bouclage de la liste de dictionnaire pour parcourir cette liste
-        # for item in range(len(user)):
-        #     user_request = user[item]
-
-        # Test de boucle pour voir si la liste sera parcourue ou pas
-
-        # Stockage pour rendu de JSON valide
         results = []
-        with open("./data/output/output.json", "w") as output:
-            output.write("")
-        for i in user_request:
 
-            prompts = i["prompt"]
-            ex = '{"name": "fn_add_numbers", "fn_greet","parameters": {"a": 2.0, "b": 3.0, "c": hello}, "returns": {"type": 5.0, "type": "hello"}'
-            # Add of the little prompt test
+        for item in user_requests:
+
+            user_request = item["prompt"]
+
             prompt = f"""
-            Your task is to select the appropriate function from the available functions
-            and extract its arguments from the user's request.
+                Select the function matching the user request.
 
-            Available functions:
-            {data}
+                Functions:
+                {json.dumps(data)}
 
-            Example:
-            User request: 'what's the sum of 2 and 3'
-            Output: {ex}
+                User request:
+                {user_request}
 
-            User request: {prompts}
+                Return only the JSON object.
+                """
 
-            Output:
-            """
-
-            # encode ou tokenisation de chaque mot dans mon prompt
+            # Tokenisation
             token = src.encode(prompt)[0].tolist()
-            # print(token)
 
-            # Creation d'une petite boucle
-            # deja_lu = []
             stockage = ""
-            # decoder seulement si necessaire
-            generated_token = []
             json_started = False
-            print("\nPrompt:", {(i["prompt"])})
-            # try:
-            for _ in range(90):
-                # # Test de logit
-                logit = src.get_logits_from_input_ids(token)
-                # print(logit)
 
-                # scoring = logit.copy()
-                # Boucle hijerevana oe efa ao ve le token sa tsia raha efa ao dia apidinina le vecteur
-                # for efa_ao in deja_lu:
-                #     scoring[efa_ao] -= 2.0
+            # Maximum de tokens générés
+            print("Prompt: ", item["prompt"])
+            for _ in range(50):
 
-                # Choix du meilleur next token possible
-                next_best_token = max(range(len(logit)), key=logit.__getitem__)
+                logits = src.get_logits_from_input_ids(token)
 
-                # Ajout du nouveau token dans token variable
-                token.append(next_best_token)
-                # deja_lu.append(next_best_token)
-                # decode du next token car on veux pas de ID mais de mot
-                decodage_next = src.decode([next_best_token])
-                generated_token.append(next_best_token)
+                next_token_id = max(
+                    range(len(logits)),
+                    key=logits.__getitem__
+                )
 
-                # On attend le premier {
+                token.append(next_token_id)
+
+                decoded = src.decode([next_token_id])
+
+                # Attendre le début du JSON
                 if not json_started:
-                    if "{" not in decodage_next:
+                    if "{" not in decoded:
                         continue
 
                     json_started = True
 
-                # print(next_best_token)
-                # Generation d prochain token baby
-                stockage += src.decode(next_best_token)
-                # print(decodage_next, end="", flush=True)
+                stockage += decoded
+
+                # Essayer de parser le JSON
                 try:
                     result = json.loads(stockage)
-                    results.append(result)
-                    print(f"\n\033[034m{json.dumps(result, indent=2)}\033[0m")
 
-                    # Ecris dans un fichier .json
-                    with open("./data/output/output.json", "w") as output:
-                        json.dump(results, output, indent=2)
+                    results.append(result)
+
+                    print(
+                        f"\033[036m"
+                        f"{json.dumps(result, indent=2)}"
+                        f"\033[0m"
+                    )
 
                     break
 
                 except json.JSONDecodeError:
-                    continue
-        
+                    pass
 
-            # except KeyboardInterrupt as e:
-            #     print("The program stop", e)
+        # Écrire une seule fois à la fin
+        with open("./data/output/output.json", "w") as file:
+            json.dump(results, file, indent=2)
 
-
-    except KeyboardInterrupt as e:
-        print("The program stop", e)
+    except KeyboardInterrupt:
+        print("\nThe program stopped.")
