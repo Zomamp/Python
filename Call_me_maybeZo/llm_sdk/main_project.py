@@ -25,12 +25,12 @@ if __name__ == "__main__":
 
         # Stockage pour rendu de JSON valide
         results = []
-        with open("./output/output.json", "w") as output:
+        with open("./data/output/output.json", "w") as output:
             output.write("")
         for i in user_request:
 
             prompts = i["prompt"]
-            ex = '{"name": "fn_add_numbers","parameters": {"a": 2.0, "b": 3.0}, "result": {"resultat": 5.0} '
+            ex = '{"name": "fn_add_numbers", "fn_greet","parameters": {"a": 2.0, "b": 3.0, "c": hello}, "returns": {"type": 5.0, "type": "hello"}'
             # Add of the little prompt test
             prompt = f"""
             Your task is to select the appropriate function from the available functions
@@ -58,56 +58,56 @@ if __name__ == "__main__":
             # decoder seulement si necessaire
             generated_token = []
             json_started = False
-            print(f"\nPrompt: {i["prompt"]}")
-            try:
-                for _ in range(90):
-                    # # Test de logit
-                    logit = src.get_logits_from_input_ids(token)
-                    # print(logit)
+            print("\nPrompt:", {(i["prompt"])})
+            # try:
+            for _ in range(90):
+                # # Test de logit
+                logit = src.get_logits_from_input_ids(token)
+                # print(logit)
 
-                    # scoring = logit.copy()
-                    # Boucle hijerevana oe efa ao ve le token sa tsia raha efa ao dia apidinina le vecteur
-                    # for efa_ao in deja_lu:
-                    #     scoring[efa_ao] -= 2.0
+                # scoring = logit.copy()
+                # Boucle hijerevana oe efa ao ve le token sa tsia raha efa ao dia apidinina le vecteur
+                # for efa_ao in deja_lu:
+                #     scoring[efa_ao] -= 2.0
 
-                    # Choix du meilleur next token possible
-                    next_best_token = max(range(len(logit)), key=logit.__getitem__)
+                # Choix du meilleur next token possible
+                next_best_token = max(range(len(logit)), key=logit.__getitem__)
 
-                    # Ajout du nouveau token dans token variable
-                    token.append(next_best_token)
-                    # deja_lu.append(next_best_token)
-                    # decode du next token car on veux pas de ID mais de mot
-                    decodage_next = src.decode([next_best_token])
-                    generated_token.append(next_best_token)
+                # Ajout du nouveau token dans token variable
+                token.append(next_best_token)
+                # deja_lu.append(next_best_token)
+                # decode du next token car on veux pas de ID mais de mot
+                decodage_next = src.decode([next_best_token])
+                generated_token.append(next_best_token)
 
-                    # On attend le premier {
-                    if not json_started:
-                        if "{" not in decodage_next:
-                            continue
-
-                        json_started = True
-
-                    # print(next_best_token)
-                    # Generation d prochain token baby
-                    stockage += src.decode(next_best_token)
-                    # print(decodage_next, end="", flush=True)
-                    try:
-                        result = json.loads(stockage)
-                        results.append(result)
-                        print(f"\n\033[034m{json.dumps(result, indent=2)}\033[0m")
-
-                        # Ecris dans un fichier .json
-                        with open("./output/output.json", "w") as output:
-                            json.dump(results, output, indent=2)
-
-                        break
-
-                    except json.JSONDecodeError:
+                # On attend le premier {
+                if not json_started:
+                    if "{" not in decodage_next:
                         continue
+
+                    json_started = True
+
+                # print(next_best_token)
+                # Generation d prochain token baby
+                stockage += src.decode(next_best_token)
+                # print(decodage_next, end="", flush=True)
+                try:
+                    result = json.loads(stockage)
+                    results.append(result)
+                    print(f"\n\033[034m{json.dumps(result, indent=2)}\033[0m")
+
+                    # Ecris dans un fichier .json
+                    with open("./data/output/output.json", "w") as output:
+                        json.dump(results, output, indent=2)
+
+                    break
+
+                except json.JSONDecodeError:
+                    continue
         
 
-            except KeyboardInterrupt as e:
-                print("The program stop", e)
+            # except KeyboardInterrupt as e:
+            #     print("The program stop", e)
 
 
     except KeyboardInterrupt as e:

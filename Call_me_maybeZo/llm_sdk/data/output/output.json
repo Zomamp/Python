@@ -1,0 +1,11 @@
+[
+  {
+    "name": "fn_greet",
+    "parameters": {
+      "name": "me"
+    },
+    "returns": {
+      "type": "hello"
+    }
+  }
+]
