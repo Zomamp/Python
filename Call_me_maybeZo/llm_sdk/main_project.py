@@ -37,7 +37,7 @@ if __name__ == "__main__":
             json_started = False
 
             # Maximum de tokens générés
-            print("Prompt: ", item["prompt"])
+            print("\nPrompt: ", item["prompt"], "\n")
             for _ in range(50):
 
                 logits = src.get_logits_from_input_ids(token)
@@ -78,7 +78,7 @@ if __name__ == "__main__":
                     pass
 
         # Écrire une seule fois à la fin
-        with open("./data/output/output.json", "w") as file:
+        with open("./data/output/function_calling_results.json", "w") as file:
             json.dump(results, file, indent=2)
 
     except KeyboardInterrupt:

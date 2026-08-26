@@ -1,8 +1,0 @@
-[
-  {
-    "function_call": "fn_greet",
-    "parameters": {
-      "name": "shrek"
-    }
-  }
-]
