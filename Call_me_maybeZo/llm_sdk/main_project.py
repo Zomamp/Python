@@ -13,14 +13,18 @@ if __name__ == "__main__":
             user_requests = json.load(file)
 
         results = []
-
+        ex = '{"name": "fn_add_numbers", "parameters": {"a": {5.0}, "b": {5.0}}, "returns": {"10.0"}}'
         for item in user_requests:
 
             user_request = item["prompt"]
 
+
+
             prompt = f"""
                 Select the function matching the user request.
 
+                The Output must be like the example:
+                {ex}
                 Functions:
                 {json.dumps(data)}
 
