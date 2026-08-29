@@ -13,7 +13,7 @@ if __name__ == "__main__":
             user_requests = json.load(file)
 
         results = []
-        ex = '{"name": "fn_add_numbers", "parameters": {"a": {5.0}, "b": {5.0}}, "returns": {"10.0"}}'
+        ex = '{"prompt": "What is the sum of 5.0 and 5.0", "name": "fn_add_numbers", "parameters": {"a": 5.0, "b": 5.0}}'
         for item in user_requests:
 
             user_request = item["prompt"]
@@ -21,18 +21,20 @@ if __name__ == "__main__":
 
 
             prompt = f"""
-                Select the function matching the user request.
+            Your task is to select the appropriate function from the available functions
+            and extract its arguments from the user's request.
 
-                The Output must be like the example:
-                {ex}
-                Functions:
-                {json.dumps(data)}
+            Available functions:
+            {data}
 
-                User request:
-                {user_request}
+            Example:
+            User request: 'what's the sum of 2 and 3'
+            Output: {ex}
 
-                Return only the JSON object.
-                """
+            User request: {user_request}
+
+            Output:
+        """
 
             # Tokenisation
             token = src.encode(prompt)[0].tolist()

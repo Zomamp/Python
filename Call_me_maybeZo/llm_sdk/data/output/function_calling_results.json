@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "prompt": "Sum of 45 and 2",
+    "name": "fn_add_numbers",
+    "parameters": {
+      "a": 45,
+      "b": 2
+    }
+  }
+]
