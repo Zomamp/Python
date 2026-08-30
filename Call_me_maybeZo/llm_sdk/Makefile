@@ -19,7 +19,7 @@ install:
 run:
 	UV_CACHE_DIR=$(CACHE_DIR) \
 	HF_HOME=$(HF_CACHE_DIR) \
-	uv run $(MAIN)
+	uv run test.py
 
 clean:
 	rm -rf __pycache__

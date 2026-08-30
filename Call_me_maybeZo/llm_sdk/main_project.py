@@ -2,90 +2,192 @@ from llm_sdk import Small_LLM_Model
 import json
 
 
+def constrained_(logits, allowed):
+    for i in range(len(logits)):
+        if i not in allowed:
+            logits[i] = float("-inf")
+
+    return logits
+
+
+def generate_token(src, tokens, allowed):
+    logits = src.get_logits_from_input_ids(tokens)
+    logits = constrained_(logits, allowed)
+
+    next_token = max(
+        range(len(logits)),
+        key=logits.__getitem__
+    )
+
+    tokens.append(next_token)
+
+    return next_token
+
+
 if __name__ == "__main__":
+
     try:
         src = Small_LLM_Model()
 
-        with open("./data/input/functions_definition.json", "r") as file:
-            data = json.load(file)
+        with open(
+            "./data/input/functions_definition.json"
+        ) as file:
+            functions = json.load(file)
 
-        with open("./prompt/prompt.json", "r") as file:
+        with open(
+            "./prompt/prompt.json"
+        ) as file:
             user_requests = json.load(file)
 
-        results = []
-        ex = '{"prompt": "What is the sum of 5.0 and 5.0", "name": "fn_add_numbers", "parameters": {"a": 5.0, "b": 5.0}}'
+        # ------------------------------------------------------------
+        # Tokens des fonctions
+        # ------------------------------------------------------------
+
+        function_tokens = {}
+
+        for function in functions:
+            name = function["name"]
+
+            function_tokens[name] = (
+                src.encode(name)[0].tolist()
+            )
+
+        # ------------------------------------------------------------
+        # Traitement
+        # ------------------------------------------------------------
+
         for item in user_requests:
 
             user_request = item["prompt"]
 
-
+            if not user_request.strip():
+                result = {
+                    "prompt": user_request,
+                    "name": None,
+                    "parameters": {}
+            }
+                print(json.dumps(result, indent=2))
+                continue
 
             prompt = f"""
-            Your task is to select the appropriate function from the available functions
-            and extract its arguments from the user's request.
+                You are a function calling assistant.
 
-            Available functions:
-            {data}
+                Available functions:
+                {json.dumps(functions, indent=2)}
 
-            Example:
-            User request: 'what's the sum of 2 and 3'
-            Output: {ex}
+                User request:
+                {user_request}
 
-            User request: {user_request}
+                Choose the correct function.
+                """
 
-            Output:
-        """
+            tokens = src.encode(prompt)[0].tolist()
 
-            # Tokenisation
-            token = src.encode(prompt)[0].tolist()
+            print("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
-            stockage = ""
-            json_started = False
+            print("\n\033[035mPrompt:", user_request, "\n\033[0m")
 
-            # Maximum de tokens générés
-            print("\nPrompt: ", item["prompt"], "\n")
-            for _ in range(50):
+            # --------------------------------------------------------
+            # On regarde les premiers tokens possibles des fonctions
+            # --------------------------------------------------------
 
-                logits = src.get_logits_from_input_ids(token)
+            first_tokens = set()
 
-                next_token_id = max(
-                    range(len(logits)),
-                    key=logits.__getitem__
+            for ids in function_tokens.values():
+                first_tokens.add(ids[0])
+
+            # --------------------------------------------------------
+            # Génération du premier token du nom
+            # --------------------------------------------------------
+
+            generated = []
+
+            next_token = generate_token(
+                src,
+                tokens,
+                list(first_tokens)
+            )
+
+            generated.append(next_token)
+
+            # --------------------------------------------------------
+            # Trouver les fonctions compatibles
+            # --------------------------------------------------------
+
+            candidates = []
+
+            for name, ids in function_tokens.items():
+
+                if ids[0] == next_token:
+                    candidates.append((name, ids))
+
+            # --------------------------------------------------------
+            # Continuer jusqu'à identifier la fonction
+            # --------------------------------------------------------
+
+            position = 1
+
+            while len(candidates) > 1:
+
+                allowed = set()
+
+                for name, ids in candidates:
+
+                    if position < len(ids):
+                        allowed.add(ids[position])
+
+                next_token = generate_token(
+                    src,
+                    tokens,
+                    list(allowed)
                 )
 
-                token.append(next_token_id)
+                generated.append(next_token)
 
-                decoded = src.decode([next_token_id])
+                # garder seulement les fonctions compatibles
+                new_candidates = []
 
-                # Attendre le début du JSON
-                if not json_started:
-                    if "{" not in decoded:
-                        continue
+                for name, ids in candidates:
 
-                    json_started = True
+                    if (
+                        position < len(ids)
+                        and ids[position] == next_token
+                    ):
+                        new_candidates.append((name, ids))
 
-                stockage += decoded
+                candidates = new_candidates
 
-                # Essayer de parser le JSON
-                try:
-                    result = json.loads(stockage)
+                position += 1
 
-                    results.append(result)
+            # --------------------------------------------------------
+            # Fonction trouvée
+            # --------------------------------------------------------
 
-                    print(
-                        f"\033[036m"
-                        f"{json.dumps(result, indent=2)}"
-                        f"\033[0m"
-                    )
+            if len(candidates) != 1:
+                print("Impossible de déterminer la fonction.")
+                continue
 
-                    break
+            function_name = candidates[0][0]
 
-                except json.JSONDecodeError:
-                    pass
+            
 
-        # Écrire une seule fois à la fin
-        with open("./data/output/function_calling_results.json", "w") as file:
-            json.dump(results, file, indent=2)
+            # --------------------------------------------------------
+            # Pour l'instant : paramètres à déterminer
+            # --------------------------------------------------------
 
-    except KeyboardInterrupt:
-        print("\nThe program stopped.")
+            result = {
+                "prompt": user_request,
+                "name": function_name,
+                "parameters": {}
+            }
+
+            print(
+                json.dumps(
+                    result,
+                    indent=2
+                )
+            )
+            with open("./data /output/function_calling_results.json", "w") as file_output:
+                json.dump(result, file_output, indent=2)
+    except KeyboardInterrupt as e:
+        print("Program Stopped")
