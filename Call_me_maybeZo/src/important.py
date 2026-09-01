@@ -8,17 +8,17 @@ def main():
     try:
         src = Small_LLM_Model()
 
+        # with open(
+        #     "./data/output/function_calling_results.json", "w"
+        #         ) as file_output:
+        #     ...
         with open(
-            "./data/output/function_calling_results.json", "w"
-                ) as file_output:
-            ...
-        with open(
-            "./data/input/functions_definition.json"
+            "./llm_sdk/data/input/functions_definition.json"
         ) as file:
             functions = json.load(file)
 
         with open(
-            "./prompt/prompt.json"
+            "data/input/input.json"
         ) as file:
             user_requests = json.load(file)
 
@@ -198,9 +198,9 @@ def main():
                 "██████████████████████████████████████████████████\033[0m"
                 )
 
-            with open(
-                "./data/output/function_calling_results.json", "w"
-                    ) as file_output:
-                json.dump(results, file_output, indent=2)
+            # with open(
+            #     "./data/output/function_calling_results.json", "w"
+            #         ) as file_output:
+            #     json.dump(results, file_output, indent=2)
     except KeyboardInterrupt:
         print("Program Stopped")
