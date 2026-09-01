@@ -1,5 +1,23 @@
 from llm_sdk import Small_LLM_Model
 import json
+import re
+from typing import Any
+
+
+def llm_extract_parameters(src, user_request, function_definition):
+    prompt = f"""
+        You are a parameter extraction assistant.
+
+        Function:
+        {json.dumps(function_definition, indent=2)}
+
+        User request:
+        {user_request}
+
+        Extract the parameters required by the function.
+
+        Return only a JSON object containing the parameters.
+        """
 
 
 def constrained_(logits, allowed):
@@ -29,6 +47,8 @@ if __name__ == "__main__":
     try:
         src = Small_LLM_Model()
 
+        with open("./data/output/function_calling_results.json", "w") as file_output:
+            ...
         with open(
             "./data/input/functions_definition.json"
         ) as file:
@@ -44,6 +64,11 @@ if __name__ == "__main__":
         # ------------------------------------------------------------
 
         function_tokens = {}
+
+        # ------------------------------------------------------------
+        # Pour aspect JSON
+        # ------------------------------------------------------------
+        results = []
 
         for function in functions:
             name = function["name"]
@@ -61,12 +86,23 @@ if __name__ == "__main__":
             user_request = item["prompt"]
 
             if not user_request.strip():
+                print("\n\033[032m██████████████████████████████████████████████████\033[0m")
+                print("\n\033[035m👉 Prompt:", user_request, "\n\033[0m")
                 result = {
                     "prompt": user_request,
                     "name": None,
                     "parameters": {}
-            }
-                print(json.dumps(result, indent=2))
+                }
+
+                results.append(result)
+
+                print(
+                    json.dumps(
+                        result,
+                        indent=2
+                    )
+                )
+
                 continue
 
             prompt = f"""
@@ -83,9 +119,11 @@ if __name__ == "__main__":
 
             tokens = src.encode(prompt)[0].tolist()
 
-            print("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+            print("\n\033[032m██████████████████████████████████████████████████\033[0m")
 
-            print("\n\033[035mPrompt:", user_request, "\n\033[0m")
+
+            print("\n\033[035m👉 Prompt:", user_request, "\n\033[0m")
+
 
             # --------------------------------------------------------
             # On regarde les premiers tokens possibles des fonctions
@@ -156,7 +194,9 @@ if __name__ == "__main__":
                         new_candidates.append((name, ids))
 
                 candidates = new_candidates
-
+            # --------------------------------------------------------
+            # Positionning
+            # --------------------------------------------------------
                 position += 1
 
             # --------------------------------------------------------
@@ -164,12 +204,24 @@ if __name__ == "__main__":
             # --------------------------------------------------------
 
             if len(candidates) != 1:
-                print("Impossible de déterminer la fonction.")
+                print("Impossible guy")
                 continue
 
             function_name = candidates[0][0]
 
-            
+            function_definition = None
+
+            for function in functions:
+                if function["name"] == function_name:
+                    function_definition = function
+                    break
+
+
+            parameters = llm_extract_parameters(
+                src,
+                user_request,
+                function_definition
+            )
 
             # --------------------------------------------------------
             # Pour l'instant : paramètres à déterminer
@@ -178,8 +230,9 @@ if __name__ == "__main__":
             result = {
                 "prompt": user_request,
                 "name": function_name,
-                "parameters": {}
+                "parameters": parameters,
             }
+            results.append(result)
 
             print(
                 json.dumps(
@@ -187,7 +240,10 @@ if __name__ == "__main__":
                     indent=2
                 )
             )
-            with open("./data /output/function_calling_results.json", "w") as file_output:
-                json.dump(result, file_output, indent=2)
+
+            print("\n\033[032m██████████████████████████████████████████████████\033[0m")
+
+            with open("./data/output/function_calling_results.json", "w") as file_output:
+                json.dump(results, file_output, indent=2)
     except KeyboardInterrupt as e:
         print("Program Stopped")
