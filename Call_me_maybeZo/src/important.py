@@ -3,6 +3,7 @@ import json
 from utils import llm_extract_parameters
 from generator import generate_token
 
+
 def main():
     try:
         src = Small_LLM_Model()

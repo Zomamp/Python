@@ -2,31 +2,31 @@
   {
     "prompt": "What is your name ?",
     "name": "fn_greet",
-    "parameters": "\n        Your task is to select the appropriate function from the available functions\n        and extract its arguments from the user's request.\n\n        Available functions:\n        {'name': 'fn_substitute_string_with_regex', 'description': 'Replace all occurrences matching a regex pattern in a string.', 'parameters': {'source_string': {'type': 'string'}, 'regex': {'type': 'string'}, 'replacement': {'type': 'string'}}, 'returns': {'type': 'string'}}\n\n        Example:\n        User request: 'what's the sum of 2 and 3'\n        Output: {\"prompt\": \"What is the sum of 265 and 345?\",\"name\": \"fn_add_numbers\", \"parameters\": {\"a\": 265.0, \"b\": 345.0}}\n\n        User request: What is your name ?\n\n        Output:\n        "
+    "parameters": null
   },
   {
     "prompt": "Add of welcome and you",
     "name": "fn_add_numbers",
-    "parameters": "\n        Your task is to select the appropriate function from the available functions\n        and extract its arguments from the user's request.\n\n        Available functions:\n        {'name': 'fn_substitute_string_with_regex', 'description': 'Replace all occurrences matching a regex pattern in a string.', 'parameters': {'source_string': {'type': 'string'}, 'regex': {'type': 'string'}, 'replacement': {'type': 'string'}}, 'returns': {'type': 'string'}}\n\n        Example:\n        User request: 'what's the sum of 2 and 3'\n        Output: {\"prompt\": \"What is the sum of 265 and 345?\",\"name\": \"fn_add_numbers\", \"parameters\": {\"a\": 265.0, \"b\": 345.0}}\n\n        User request: Add of welcome and you\n\n        Output:\n        "
+    "parameters": null
   },
   {
-    "prompt": "What is your name ?",
-    "name": "fn_greet",
-    "parameters": "\n        Your task is to select the appropriate function from the available functions\n        and extract its arguments from the user's request.\n\n        Available functions:\n        {'name': 'fn_substitute_string_with_regex', 'description': 'Replace all occurrences matching a regex pattern in a string.', 'parameters': {'source_string': {'type': 'string'}, 'regex': {'type': 'string'}, 'replacement': {'type': 'string'}}, 'returns': {'type': 'string'}}\n\n        Example:\n        User request: 'what's the sum of 2 and 3'\n        Output: {\"prompt\": \"What is the sum of 265 and 345?\",\"name\": \"fn_add_numbers\", \"parameters\": {\"a\": 265.0, \"b\": 345.0}}\n\n        User request: What is your name ?\n\n        Output:\n        "
+    "prompt": "",
+    "name": null,
+    "parameters": {}
   },
   {
     "prompt": "What is the sum of 265 and 345?",
     "name": "fn_add_numbers",
-    "parameters": "\n        Your task is to select the appropriate function from the available functions\n        and extract its arguments from the user's request.\n\n        Available functions:\n        {'name': 'fn_substitute_string_with_regex', 'description': 'Replace all occurrences matching a regex pattern in a string.', 'parameters': {'source_string': {'type': 'string'}, 'regex': {'type': 'string'}, 'replacement': {'type': 'string'}}, 'returns': {'type': 'string'}}\n\n        Example:\n        User request: 'what's the sum of 2 and 3'\n        Output: {\"prompt\": \"What is the sum of 265 and 345?\",\"name\": \"fn_add_numbers\", \"parameters\": {\"a\": 265.0, \"b\": 345.0}}\n\n        User request: What is the sum of 265 and 345?\n\n        Output:\n        "
+    "parameters": null
   },
   {
     "prompt": "Greet shrek",
     "name": "fn_greet",
-    "parameters": "\n        Your task is to select the appropriate function from the available functions\n        and extract its arguments from the user's request.\n\n        Available functions:\n        {'name': 'fn_substitute_string_with_regex', 'description': 'Replace all occurrences matching a regex pattern in a string.', 'parameters': {'source_string': {'type': 'string'}, 'regex': {'type': 'string'}, 'replacement': {'type': 'string'}}, 'returns': {'type': 'string'}}\n\n        Example:\n        User request: 'what's the sum of 2 and 3'\n        Output: {\"prompt\": \"What is the sum of 265 and 345?\",\"name\": \"fn_add_numbers\", \"parameters\": {\"a\": 265.0, \"b\": 345.0}}\n\n        User request: Greet shrek\n\n        Output:\n        "
+    "parameters": null
   },
   {
     "prompt": "Greet john",
     "name": "fn_greet",
-    "parameters": "\n        Your task is to select the appropriate function from the available functions\n        and extract its arguments from the user's request.\n\n        Available functions:\n        {'name': 'fn_substitute_string_with_regex', 'description': 'Replace all occurrences matching a regex pattern in a string.', 'parameters': {'source_string': {'type': 'string'}, 'regex': {'type': 'string'}, 'replacement': {'type': 'string'}}, 'returns': {'type': 'string'}}\n\n        Example:\n        User request: 'what's the sum of 2 and 3'\n        Output: {\"prompt\": \"What is the sum of 265 and 345?\",\"name\": \"fn_add_numbers\", \"parameters\": {\"a\": 265.0, \"b\": 345.0}}\n\n        User request: Greet john\n\n        Output:\n        "
+    "parameters": null
   }
 ]
