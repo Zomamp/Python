@@ -1,21 +1,9 @@
 [
   {
-    "prompt": "What is your name ?"
-  },
-  {
-    "prompt": "Add of welcome and you"
-  },
-  {
     "prompt": ""
   },
   {
-    "prompt": "What is the sum of 265 and 345?"
-  },
-  {
-    "prompt": "Greet shrek"
-  },
-  {
-    "prompt": "Greet john"
+    "prompt": "What is the sum of 5 and 4 and 6?"
   },
   {
     "prompt": "Reverse the string 'hello'"

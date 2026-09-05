@@ -13,12 +13,12 @@ def main():
         #         ) as file_output:
         #     ...
         with open(
-            "./llm_sdk/data/input/functions_definition.json"
+            "./data/input/functions_definition.json"
         ) as file:
             functions = json.load(file)
 
         with open(
-            "data/input/input.json"
+            "./data/input/function_calling_tests.json"
         ) as file:
             user_requests = json.load(file)
 
@@ -170,9 +170,17 @@ def main():
 
             function_name = candidates[0][0]
 
+            selected_function = None
+
+            for function in functions:
+                if function["name"] == function_name:
+                    selected_function = function
+                    break
+
             parameters = llm_extract_parameters(
+                src,
                 user_request,
-                function
+                selected_function
             )
 
             # --------------------------------------------------------
