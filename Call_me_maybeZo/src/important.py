@@ -2,16 +2,17 @@ from llm_sdk import Small_LLM_Model
 import json
 from utils import llm_extract_parameters
 from generator import generate_token
-
+import models
 
 def main():
     try:
         src = Small_LLM_Model()
 
-        # with open(
-        #     "./data/output/function_calling_results.json", "w"
-        #         ) as file_output:
-        #     ...
+        # encodage de fn_add_numbers
+
+        print(src.encode("fn_add_numbers"))
+
+        # Fin de l'encodage
         with open(
             "./data/input/functions_definition.json"
         ) as file:
@@ -22,27 +23,21 @@ def main():
         ) as file:
             user_requests = json.load(file)
 
-        # ------------------------------------------------------------
-        # Tokens des fonctions
-        # ------------------------------------------------------------
-
         function_tokens = {}
 
-        # ------------------------------------------------------------
-        # Pour aspect JSON
-        # ------------------------------------------------------------
         results = []
 
+        print("\033[035m ____  ____  _     _           _      _____      _      ____ ___  _ ____  _____\033[0m\n"
+              "\033[036m/   _\\/  _ \\/ \\   / \\         / \\__/|/  __/     / \\__/|/  _ \\\\  \\///  __\\/  __/\033[0m\n"
+              "|  /  | / \\|| |   | |   _____ | |\\/|||  \\ _____ | |\\/||| / \\| \\  / | | //|  \\  \n"
+              "|  \\__| |-||| |_/\\| |_/\\\\____\\| |  |||  /_\\____\\| |  ||| |-|| / /  | |_\\\\|  /_ \n"
+              "\033[035m\\____/\\_/ \\|\\____/\\____/      \\_/  \\|\\____\\     \\_/  \\|\\_/ \\|/_/   \\____/\\____\\\n\033[0m")
         for function in functions:
             name = function["name"]
 
             function_tokens[name] = (
                 src.encode(name)[0].tolist()
             )
-
-        # ------------------------------------------------------------
-        # Traitement
-        # ------------------------------------------------------------
 
         for item in user_requests:
 
@@ -109,20 +104,12 @@ def main():
 
             generated.append(next_token)
 
-            # --------------------------------------------------------
-            # Trouver les fonctions compatibles
-            # --------------------------------------------------------
-
             candidates = []
 
             for name, ids in function_tokens.items():
 
                 if ids[0] == next_token:
                     candidates.append((name, ids))
-
-            # --------------------------------------------------------
-            # Continuer jusqu'à identifier la fonction
-            # --------------------------------------------------------
 
             position = 1
 
@@ -143,7 +130,6 @@ def main():
 
                 generated.append(next_token)
 
-                # garder seulement les fonctions compatibles
                 new_candidates = []
 
                 for name, ids in candidates:
@@ -155,17 +141,11 @@ def main():
                         new_candidates.append((name, ids))
 
                 candidates = new_candidates
-            # --------------------------------------------------------
-            # Positionning
-            # --------------------------------------------------------
+
                 position += 1
 
-            # --------------------------------------------------------
-            # Fonction trouvée
-            # --------------------------------------------------------
-
             if len(candidates) != 1:
-                print("Impossible guy")
+                print("Impossible guy!!!")
                 continue
 
             function_name = candidates[0][0]
@@ -183,32 +163,23 @@ def main():
                 selected_function
             )
 
-            # --------------------------------------------------------
-            # Pour l'instant : paramètres à déterminer
-            # --------------------------------------------------------
-
-            result = {
-                "prompt": user_request,
-                "name": function_name,
-                "parameters": parameters,
-            }
-            results.append(result)
-
-            print(
-                json.dumps(
-                    result,
-                    indent=2
-                )
+            result = models.FunctionCall(
+                prompt=user_request,
+                name=function_name,
+                parameters=parameters
             )
+            results.append(result.model_dump())
+
+            print(result.model_dump_json(indent=2))
 
             print(
                 "\n\033[032m"
                 "██████████████████████████████████████████████████\033[0m"
                 )
 
-            # with open(
-            #     "./data/output/function_calling_results.json", "w"
-            #         ) as file_output:
-            #     json.dump(results, file_output, indent=2)
+            with open(
+                "./data/output/function_calling_results.json", "w"
+                    ) as file_output:
+                json.dump(results, file_output, indent=2)
     except KeyboardInterrupt:
-        print("Program Stopped")
+        print("\033[031mProgram Stopped\033[0m")

@@ -3,15 +3,19 @@ import re
 
 def llm_extract_parameters(src, user_request, function):
     prompt = f"""
-        You are a function calling assistant.
+        Extract the arguments from the user request.
 
-        Function:
+        Do NOT execute the function.
+        Do NOT calculate the result.
+        Do NOT transform the values.
+
+        Function definition:
         {json.dumps(function, indent=2)}
 
         User request:
         {user_request}
 
-        Return only the parameters as JSON.
+        Return only the arguments as JSON.
 
         Output:
         """
@@ -20,7 +24,7 @@ def llm_extract_parameters(src, user_request, function):
 
     generated = []
 
-    for _ in range(20):
+    for _ in range(30):
         logits = src.get_logits_from_input_ids(tokens)
 
         next_token = max(
@@ -32,7 +36,6 @@ def llm_extract_parameters(src, user_request, function):
         generated.append(next_token)
 
     output = src.decode(generated)
-    print("VOILA LE OUTPUT : ", output)
 
     sortie = re.search(r'{.*?\}', output)
 
