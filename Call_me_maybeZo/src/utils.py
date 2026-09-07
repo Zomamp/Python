@@ -1,25 +1,25 @@
 import json
 import re
-from typing import Any
+from typing import Any, Dict
 
 
-def llm_extract_parameters(src: Any, user_request: str, function: Any) -> Any:
+def llm_extract_parameters(src: Any, user_request: str, function: Any) -> Dict[str, Any]:
     allowed_params = function.get("parameters", {})
+    allowed_keys = list(allowed_params.keys())
 
-    prompt = f"""You are a function calling assistant.
+    prompt = f"""Extract the argument values from the user request for the function.
 
-    Available functions:
-    {json.dumps(function, indent=2)}
+        Function definition:
+        {json.dumps(function, indent=2)}
 
-    User request:
-    {user_request}
+        CRITICAL: Only use parameter names that exist in the definition
+        ({'\n'.join(allowed_keys)}). Do NOT invent new parameters.
 
-    Rules:
-    - Respond with the exact function name required.
-    - If no function matches, or if the request is gibberish,
-    symbols, or nonsense, respond with "none".
+        User request:
+        {user_request}
 
-    Function:"""
+        Return ONLY the arguments JSON object:
+        """
 
     tokens = src.encode(prompt)[0].tolist()
     generated = []

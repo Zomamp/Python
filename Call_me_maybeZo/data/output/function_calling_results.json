@@ -1,9 +1,18 @@
 [
   {
-    "prompt": "BANANANANAN",
-    "name": "fn_reverse_string",
+    "prompt": "1",
+    "name": "fn_add_numbers",
     "parameters": {
-      "s": "BANANANANAN"
+      "a": null,
+      "b": null
+    }
+  },
+  {
+    "prompt": "What is the sum of 265 and 345?",
+    "name": "fn_add_numbers",
+    "parameters": {
+      "a": null,
+      "b": null
     }
   }
 ]
