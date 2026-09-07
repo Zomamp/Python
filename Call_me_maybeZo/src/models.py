@@ -9,6 +9,11 @@ class Function_definition(BaseModel):
     returns: dict[str, Any]
 
 
+class FunctionPrompt(BaseModel):
+    """Just a prompt keys in the dict"""
+    prompt: str
+
+
 class FunctionCall(BaseModel):
     """Represent a generated function call."""
 

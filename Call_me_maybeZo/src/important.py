@@ -3,6 +3,8 @@ import json
 from utils import llm_extract_parameters
 from generator import generate_token
 import models
+from pydantic import ValidationError
+
 
 def main():
     try:
@@ -41,9 +43,13 @@ def main():
 
         for item in user_requests:
 
-            user_request = item["prompt"]
+            # user_request = item["prompt"]
+            prompt_pydantic = models.FunctionPrompt(**item)
 
-            if not user_request.strip():
+            # Test
+            user_request = prompt_pydantic.prompt
+
+            if not user_request:
                 print(
                     "\n\033[032m"
                     "██████████████████████████████████████████████████\033[0m"
@@ -183,3 +189,7 @@ def main():
                 json.dump(results, file_output, indent=2)
     except KeyboardInterrupt:
         print("\033[031mProgram Stopped\033[0m")
+    except ValidationError as e:
+        for error in e.errors():
+            print(error['msg'])
+        exit(1)
