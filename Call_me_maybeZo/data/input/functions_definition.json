@@ -5,6 +5,9 @@
     "parameters": {
       "a": {
         "type": "number"
+      },
+      "b": {
+        "type": "number"
       }
     },
     "returns": {

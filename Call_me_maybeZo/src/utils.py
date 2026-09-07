@@ -3,48 +3,56 @@ import re
 from typing import Any
 
 
-def llm_extract_parameters(src: Any, user_request: Any, function: Any) -> Any:
-    prompt = f"""
-        Extract the arguments from the user request.
+def llm_extract_parameters(src: Any, user_request: str, function: Any) -> Any:
+    allowed_params = function.get("parameters", {})
 
-        Do NOT execute the function.
-        Do NOT calculate the result.
-        Do NOT transform the values.
+    prompt = f"""You are a function calling assistant.
 
-        Function definition:
-        {json.dumps(function, indent=2)}
+    Available functions:
+    {json.dumps(function, indent=2)}
 
-        User request:
-        {user_request}
+    User request:
+    {user_request}
 
-        Return only the arguments as JSON.
+    Rules:
+    - Respond with the exact function name required.
+    - If no function matches, or if the request is gibberish,
+    symbols, or nonsense, respond with "none".
 
-        Output:
-        """
+    Function:"""
 
     tokens = src.encode(prompt)[0].tolist()
-
     generated = []
 
-    for _ in range(30):
+    for _ in range(40):
         logits = src.get_logits_from_input_ids(tokens)
-
         next_token = max(
             range(len(logits)),
             key=logits.__getitem__
         )
-
         tokens.append(next_token)
         generated.append(next_token)
 
     output = src.decode(generated)
+    out = re.search(r'\{.*?\}', output, re.DOTALL)
 
-    sortie = re.search(r'{.*?\}', output)
-
-    if sortie is None:
+    if out is None:
         return {}
 
-    return json.loads(sortie.group())
+    try:
+        raw_params = json.loads(out.group())
+        if not isinstance(raw_params, dict):
+            return {}
+
+        filtered_params = {
+            k: v for k, v in raw_params.items()
+            if k in allowed_params
+        }
+
+        return filtered_params
+
+    except json.JSONDecodeError:
+        return {}
 
 
 def constrained_(logits: Any, allowed: Any) -> Any:
