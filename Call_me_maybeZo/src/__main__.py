@@ -16,13 +16,13 @@ if __name__ == "__main__":
         result = end - begin
         if result >= 200:
             print("\nOh no ! the program take a lot of time 😕 "
-                  "=> \033[031m{result}\033[0m")
+                  f"=> \033[031m{result}\033[0m")
         elif result <= 50:
             print("\n😄 Felicitation the program is over at "
-                  "=> \033[033m{result}\033[0m")
+                  f"=> \033[033m{result}\033[0m")
         elif result <= 30:
             print("\n🙌🎉 Congratulation "
-                  "=> \033[032m{result}\033[0m")
+                  f"=> \033[032m{result}\033[0m")
 
     except FileNotFoundError as e:
         print("\033[031m", e, "\033[0m")
