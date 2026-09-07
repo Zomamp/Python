@@ -3,18 +3,18 @@ import json
 from utils import llm_extract_parameters
 from generator import generate_token
 import models
-from pydantic import ValidationError
+import sys
+try:
+    from pydantic import ValidationError
+except Exception as e:
+    print(e)
+    sys.exit(1)
 
 
 def main():
     try:
         src = Small_LLM_Model()
 
-        # encodage de fn_add_numbers
-
-        print(src.encode("fn_add_numbers"))
-
-        # Fin de l'encodage
         with open(
             "./data/input/functions_definition.json"
         ) as file:
@@ -29,11 +29,18 @@ def main():
 
         results = []
 
-        print("\033[035m ____  ____  _     _           _      _____      _      ____ ___  _ ____  _____\033[0m\n"
-              "\033[036m/   _\\/  _ \\/ \\   / \\         / \\__/|/  __/     / \\__/|/  _ \\\\  \\///  __\\/  __/\033[0m\n"
-              "|  /  | / \\|| |   | |   _____ | |\\/|||  \\ _____ | |\\/||| / \\| \\  / | | //|  \\  \n"
-              "|  \\__| |-||| |_/\\| |_/\\\\____\\| |  |||  /_\\____\\| |  ||| |-|| / /  | |_\\\\|  /_ \n"
-              "\033[035m\\____/\\_/ \\|\\____/\\____/      \\_/  \\|\\____\\     \\_/  \\|\\_/ \\|/_/   \\____/\\____\\\n\033[0m")
+        print("\033[035m ____  ____  _     _           _      "
+              "_____      _      ____ ___  _ ____  _____\033[0m\n"
+              "\033[036m/   _\\/  _ \\/ \\   / \\         / \\__/|"
+              "/  __/     / \\__/|/  _ \\\\  \\///  __\\/  __/\033[0m\n"
+              "|  /  | / \\|| |   | |   _____ | |\\/|||  "
+              "\\ _____ | |\\/||| / \\| \\  / | | //|  \\  \n"
+              "|  \\__| |-||| |_/\\| |_/\\\\____\\| |  |||  "
+              "/_\\____\\| |  ||| |-|| / /  | |_\\\\|  /_ \n"
+              "\033[035m\\____/\\_/ \\|\\____/\\____/      "
+              "\\_/  \\|\\____\\     \\_/  \\|\\_/ \\|"
+              "/_/   \\____/\\____\\\n\033[0m")
+
         for function in functions:
             name = function["name"]
 
@@ -43,7 +50,6 @@ def main():
 
         for item in user_requests:
 
-            # user_request = item["prompt"]
             prompt_pydantic = models.FunctionPrompt(**item)
 
             # Test
@@ -163,6 +169,11 @@ def main():
                     selected_function = function
                     break
 
+                # Test raha ohatra ka tsy ao anatinle fonction_definition iny le fonction appeller ohatra
+                elif function["name"] != function_name:
+                    selected_function = None
+                    break
+
             parameters = llm_extract_parameters(
                 src,
                 user_request,
@@ -174,6 +185,7 @@ def main():
                 name=function_name,
                 parameters=parameters
             )
+
             results.append(result.model_dump())
 
             print(result.model_dump_json(indent=2))
@@ -187,9 +199,11 @@ def main():
                 "./data/output/function_calling_results.json", "w"
                     ) as file_output:
                 json.dump(results, file_output, indent=2)
+
     except KeyboardInterrupt:
         print("\033[031mProgram Stopped\033[0m")
+
     except ValidationError as e:
         for error in e.errors():
-            print(error['msg'])
+            print(f"We have an error {error['msg']} => {error['input']}")
         exit(1)

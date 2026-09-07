@@ -1,5 +1,11 @@
 from typing import Any
-from pydantic import BaseModel
+import sys
+try:
+    from pydantic import BaseModel
+except Exception as e:
+    print(e)
+    sys.exit(1)
+
 
 class Function_definition(BaseModel):
     """Description anle zavatra ilaina rehetra aloha"""
