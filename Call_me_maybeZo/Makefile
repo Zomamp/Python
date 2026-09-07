@@ -37,8 +37,8 @@ clean:
 	@find . -type d -name "__pycache__" -exec rm -rf {} +
 
 help:
-	@echo "\033[035mmake install\033[0m is for installation, the cache and huggingface is already in the folder of actual folder, don't worry about it"
-	@echo "\033[035mmake lint\033[0m is for the managing of the  project , using flake8 and mypy"
-	@echo "\033[035mmake lint-strict \033[0m Same as below but more strict"
-	@echo "\033[035mmake run \033[0m To run the project"
-	@echo "\033[035mmake \033[0m If you just do make, the program run"
+	@echo "\033[035mmake install\033[0m       is for installation, the cache and huggingface is already in the folder of actual folder, don't worry about it"
+	@echo "\033[035mmake lint\033[0m          is for the managing of the  project , using flake8 and mypy"
+	@echo "\033[035mmake lint-strict \033[0m  Same as below but more strict"
+	@echo "\033[035mmake run \033[0m          To run the project"
+	@echo "\033[035mmake \033[0m              If you just do make, the program run"

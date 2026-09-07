@@ -169,11 +169,6 @@ def main():
                     selected_function = function
                     break
 
-                # Test raha ohatra ka tsy ao anatinle fonction_definition iny le fonction appeller ohatra
-                elif function["name"] != function_name:
-                    selected_function = None
-                    break
-
             parameters = llm_extract_parameters(
                 src,
                 user_request,
