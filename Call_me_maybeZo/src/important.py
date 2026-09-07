@@ -1,9 +1,10 @@
-from llm_sdk import Small_LLM_Model
+from llm_sdk import Small_LLM_Model  # type: ignore
 import json
 from utils import llm_extract_parameters
 from generator import generate_token
 import models
 import sys
+from typing import Any, Never, Literal
 try:
     from pydantic import ValidationError
 except Exception as e:
@@ -11,19 +12,23 @@ except Exception as e:
     sys.exit(1)
 
 
-def main():
+def main() -> Any:
     try:
         src = Small_LLM_Model()
 
-        with open(
-            "./data/input/functions_definition.json"
-        ) as file:
-            functions = json.load(file)
+        try:
+            with open(
+                "./data/input/functions_definition.json"
+            ) as file:
+                functions = json.load(file)
 
-        with open(
-            "./data/input/function_calling_tests.json"
-        ) as file:
-            user_requests = json.load(file)
+            with open(
+                "./data/input/function_calling_tests.json"
+            ) as file:
+                user_requests = json.load(file)
+        except json.decoder.JSONDecodeError as e:
+            print(e)
+            exit(1)
 
         function_tokens = {}
 
@@ -52,7 +57,6 @@ def main():
 
             prompt_pydantic = models.FunctionPrompt(**item)
 
-            # Test
             user_request = prompt_pydantic.prompt
 
             if not user_request:
@@ -61,17 +65,19 @@ def main():
                     "██████████████████████████████████████████████████\033[0m"
                     )
                 print("\n\033[035m👉 Prompt:", user_request, "\n\033[0m")
-                result = {
+                resulting: dict[
+                    str,
+                    dict[Never, Never] | Literal[''] | None] = {
                     "prompt": user_request,
                     "name": None,
                     "parameters": {}
                 }
 
-                results.append(result)
+                results.append(resulting)
 
                 print(
                     json.dumps(
-                        result,
+                        resulting,
                         indent=2
                     )
                 )
@@ -201,4 +207,7 @@ def main():
     except ValidationError as e:
         for error in e.errors():
             print(f"We have an error {error['msg']} => {error['input']}")
+        exit(1)
+    except json.decoder.JSONDecodeError as e:
+        print(e)
         exit(1)

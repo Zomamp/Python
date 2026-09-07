@@ -34,7 +34,7 @@ run:
 clean:
 	@rm -rf __pycache__
 	@find . -type d -name "__pycache__" -exec rm -rf {} +
-	@find . -type d -name "__pycache__" -exec rm -rf {} +
+	@find . -type d -name ".mypy_cache" -exec rm -rf {} +
 
 help:
 	@echo "\033[035mmake install\033[0m       is for installation, the cache and huggingface is already in the folder of actual folder, don't worry about it"

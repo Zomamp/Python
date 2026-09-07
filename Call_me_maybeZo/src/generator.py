@@ -1,7 +1,9 @@
 from utils import constrained_
+from llm_sdk import Small_LLM_Model  # type: ignore
+from typing import Any
 
 
-def generate_token(src, tokens, allowed):
+def generate_token(src: Small_LLM_Model, tokens: Any, allowed: Any) -> Any:
     logits = src.get_logits_from_input_ids(tokens)
     logits = constrained_(logits, allowed)
 
@@ -13,23 +15,3 @@ def generate_token(src, tokens, allowed):
     tokens.append(next_token)
 
     return next_token
-
-# TESTING OF ONE FUNCTION
-def generate_fixed_text(src, tokens, text):
-    """Generate a predefined text using constrained decoding."""
-    target_tokens = src.encode(text)
-
-    for token_id in target_tokens:
-        logits = src.get_logits_from_input_ids(tokens)
-
-        logits = constrained_(
-            logits,
-            [token_id]
-        )
-
-        next_token = max(
-            range(len(logits)),
-            key=logits.__getitem__
-        )
-
-        tokens.append(next_token)

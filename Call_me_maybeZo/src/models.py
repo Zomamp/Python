@@ -22,7 +22,6 @@ class FunctionPrompt(BaseModel):
 
 class FunctionCall(BaseModel):
     """Represent a generated function call."""
-
     prompt: str
     name: str | None
     parameters: dict[str, Any]

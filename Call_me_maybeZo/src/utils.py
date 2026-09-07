@@ -1,7 +1,9 @@
 import json
 import re
+from typing import Any
 
-def llm_extract_parameters(src, user_request, function):
+
+def llm_extract_parameters(src: Any, user_request: Any, function: Any) -> Any:
     prompt = f"""
         Extract the arguments from the user request.
 
@@ -45,7 +47,7 @@ def llm_extract_parameters(src, user_request, function):
     return json.loads(sortie.group())
 
 
-def constrained_(logits, allowed):
+def constrained_(logits: Any, allowed: Any) -> Any:
     for i in range(len(logits)):
         if i not in allowed:
             logits[i] = float("-inf")
