@@ -75,23 +75,23 @@ def llm_extract_parameters(
     output = src.decode(generated)
     out = re.search(r'\{.*?\}', output)
 
-    if out is None:
-        return {}
+    raw_params: Dict[str, Any] = {}
+    if out is not None:
+        try:
+            parsed = json.loads(out.group())
+            if isinstance(parsed, dict):
+                raw_params = parsed
+        except json.JSONDecodeError:
+            pass
 
-    try:
-        raw_params = json.loads(out.group())
-        if not isinstance(raw_params, dict):
-            return {}
+    final_params: Dict[str, Any] = {}
+    for key, spec in allowed_params.items():
+        expected_type = spec.get("type", "string")
+        raw_val = raw_params.get(key)
 
-        filtered_params = {
-            k: v for k, v in raw_params.items()
-            if k in allowed_params
-        }
+        final_params[key] = validate_and_cast(raw_val, expected_type)
 
-        return filtered_params
-
-    except json.JSONDecodeError:
-        return {}
+    return final_params
 
 
 def constrained_(logits: Any, allowed: Any) -> Any:
