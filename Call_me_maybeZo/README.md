@@ -1,5 +1,5 @@
 <center><p>This project has been created as part of the 42 curriculum by <i>zo-rakot</i></p>
-<img src="src/Call.jpeg"></center>
+<img src="src/img/Call.jpeg"></center>
 <br>
 <h1>✅ DESCRIPTION</h1>
 <p>
@@ -22,5 +22,18 @@
         This project includes a Makefile to simplify startup, dependency installation, and directory management.
     </p>
     <p>
-        In the folder containing the <strong style="color: red">Makefile<strong>
+        In the folder containing the <strong style="color: red">Makefile</strong>
+        <br>
+        In your terminal just tap
+    </p>
+        <pre>
+        bash
+            <strong style="color: bisque">make install</strong>
+        and
+            <strong style="color: bisque">make run</strong>
+        </pre>
+    <p>
+        <strong style="color: bisque">make install</strong> for the installation of dependencies and the download of all <strong>uv cache</strong>
+        <br>
+        <strong style="color: bisque">make run</strong> for downloading the <strong>hugging_face_cache</strong> and running of the program
     </p>
