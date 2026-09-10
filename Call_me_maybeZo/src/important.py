@@ -111,17 +111,11 @@ def main() -> Any:
 
                 continue
 
-            prompt = f"""
-                You are a function calling assistant.
-
-                Available functions:
-                {json.dumps(functions, indent=2)}
-
-                User request:
-                {user_request}
-
-                Choose the correct function.
-                """
+            prompt = (
+                f"Functions: {json.dumps(functions)}\n"
+                f"User request: {user_request}\n"
+                "Function name:"
+            )
 
             tokens = src.encode(prompt)[0].tolist()
 

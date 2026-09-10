@@ -26,6 +26,7 @@ lint-strict:
 
 run:
 	clear
+	@mkdir -p data/output
 	@UV_CACHE_DIR=$(CACHE_DIR) \
 	HF_HOME=$(HF_CACHE_DIR) \
 	uv run -m src 

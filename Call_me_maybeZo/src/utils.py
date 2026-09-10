@@ -38,38 +38,26 @@ def validate_and_cast(val: Any, expected_type: str) -> Optional[Any]:
 
 
 def llm_extract_parameters(
-        src: Small_LLM_Model,
-        user_request: str,
-        function: Any
-        ) -> Dict[str, Any]:
+    src: Small_LLM_Model,
+    user_request: str,
+    function: Any
+) -> Dict[str, Any]:
     allowed_params = function.get("parameters", {})
-    allowed_keys = list(allowed_params.keys())
-    regex_hint = ""
-    regex_hint = (
-                "\nSpecial rules for regex substitution:\n"
-                "- 'replacement': the target value right after 'with' \
-                (e.g. 'with NUMBERS' -> 'NUMBERS').\n"
-                "- 'regex': convert concepts ('numbers' -> '\\d+',\
-                'vowels' -> '.*[aeiouAEIOU].*').\n"
-                "- Do not use numbers from inside the text string"
-                "as regex or replacement."
-            )
 
-    prompt = f"""Extract the argument values
-        from the user request for the function.
-
-        Function definition:
-        {json.dumps(function, indent=2)}
-
-        CRITICAL: Only use parameter names that exist in the definition
-        ({'\n'.join(allowed_keys)}). Do NOT invent new parameters.
-        {regex_hint}
-
-        User request:
-        {user_request}
-
-        Return ONLY the arguments JSON object:
-        """
+    prompt = (
+        f"Extract argument values for function '{function.get('name', '')}'.\n"
+        f"Function definition: {json.dumps(function)}\n"
+        f"Allowed keys: {list(allowed_params.keys())}\n"
+        "Rules for regex substitution:\n"
+        "- 'replacement': target value right\
+        after 'with' (e.g. 'with NUM' -> 'NUM').\n"
+        "- 'regex': convert concepts\
+         ('numbers' -> '\\d+', 'vowels' -> '.*[aeiouAEIOU].*').\n"
+        "- Do not use numbers from \
+        inside the text string as regex or replacement.\n"
+        f"User request: {user_request}\n"
+        "Return ONLY the arguments JSON object:"
+    )
 
     tokens = src.encode(prompt)[0].tolist()
     generated = []
