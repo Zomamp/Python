@@ -63,7 +63,7 @@ def llm_extract_parameters(
     tokens = src.encode(prompt)[0].tolist()
     generated = []
 
-    for _ in range(40):
+    for _ in range(30):
         logits = src.get_logits_from_input_ids(tokens)
         next_token = max(
             range(len(logits)),
@@ -72,8 +72,11 @@ def llm_extract_parameters(
         tokens.append(next_token)
         generated.append(next_token)
 
+        if "}" in src.decode([next_token]):
+            break
+
     output = src.decode(generated)
-    out = re.search(r'\{.*?\}', output)
+    out = re.search(r'\{.*?\}', output, re.DOTALL)
 
     raw_params: Dict[str, Any] = {}
     if out is not None:

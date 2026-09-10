@@ -8,10 +8,9 @@ def generate_token(src: Small_LLM_Model, tokens: Any, allowed: Any) -> Any:
     logits = constrained_(logits, allowed)
 
     next_token = max(
-        range(len(logits)),
-        key=logits.__getitem__
+        allowed,
+        key=lambda x: logits[x]
     )
 
     tokens.append(next_token)
-
     return next_token
