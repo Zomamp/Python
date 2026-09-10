@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 import sys
 try:
     from pydantic import BaseModel
@@ -6,6 +6,10 @@ except Exception as e:
     print(e)
     sys.exit(1)
 
+
+class paramtype(BaseModel):
+    """Test"""
+    parameters: Literal["number", "string"]
 
 class Function_definition(BaseModel):
     """Description anle zavatra ilaina rehetra aloha"""

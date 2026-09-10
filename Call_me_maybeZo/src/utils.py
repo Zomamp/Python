@@ -1,13 +1,52 @@
 import json
 import re
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+from llm_sdk import Small_LLM_Model  # type: ignore
 
 
-def llm_extract_parameters(src: Any, user_request: str, function: Any) -> Dict[str, Any]:
+def validate_and_cast(val: Any, expected_type: str) -> Optional[Any]:
+    """Vérifie et convertit la valeur selon le type attendu dans le JSON."""
+    if val is None:
+        return None
+
+    if expected_type == "number":
+        if isinstance(val, (int, float)) and not isinstance(val, bool):
+            return val
+        elif isinstance(val, bool):
+            return None
+        try:
+            num = float(val)
+            return int(num) if num.is_integer() else num
+        except (ValueError, TypeError):
+            return None
+
+    elif expected_type == "string":
+        if isinstance(val, str):
+            return val
+        return str(val)
+
+    elif expected_type == "boolean":
+        if isinstance(val, bool):
+            return val
+        if str(val).lower() in ("true", "1"):
+            return True
+        if str(val).lower() in ("false", "0"):
+            return False
+        return None
+
+    return val
+
+
+def llm_extract_parameters(
+        src: Small_LLM_Model,
+        user_request: str,
+        function: Any
+        ) -> Dict[str, Any]:
     allowed_params = function.get("parameters", {})
     allowed_keys = list(allowed_params.keys())
 
-    prompt = f"""Extract the argument values from the user request for the function.
+    prompt = f"""Extract the argument values
+        from the user request for the function.
 
         Function definition:
         {json.dumps(function, indent=2)}
@@ -34,7 +73,7 @@ def llm_extract_parameters(src: Any, user_request: str, function: Any) -> Dict[s
         generated.append(next_token)
 
     output = src.decode(generated)
-    out = re.search(r'\{.*?\}', output, re.DOTALL)
+    out = re.search(r'\{.*?\}', output)
 
     if out is None:
         return {}

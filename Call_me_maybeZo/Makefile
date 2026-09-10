@@ -27,6 +27,7 @@ lint-strict:
 	@python3 -m flake8 --exclude=.venv,__pycache__,.mypy_cache src
 
 run:
+	clear
 	@UV_CACHE_DIR=$(CACHE_DIR) \
 	HF_HOME=$(HF_CACHE_DIR) \
 	uv run $(MAIN)
@@ -35,6 +36,11 @@ clean:
 	@rm -rf __pycache__
 	@find . -type d -name "__pycache__" -exec rm -rf {} +
 	@find . -type d -name ".mypy_cache" -exec rm -rf {} +
+
+push:
+	git add .
+	git commit -m "Mis a jour"
+	git push
 
 help:
 	@echo "\033[035mmake install\033[0m       is for installation, the cache and huggingface is already in the folder of actual folder, don't worry about it"
