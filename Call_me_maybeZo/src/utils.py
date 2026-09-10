@@ -44,6 +44,16 @@ def llm_extract_parameters(
         ) -> Dict[str, Any]:
     allowed_params = function.get("parameters", {})
     allowed_keys = list(allowed_params.keys())
+    regex_hint = ""
+    regex_hint = (
+                "\nSpecial rules for regex substitution:\n"
+                "- 'replacement': the target value right after 'with' \
+                (e.g. 'with NUMBERS' -> 'NUMBERS').\n"
+                "- 'regex': convert concepts ('numbers' -> '\\d+',\
+                'vowels' -> '.*[aeiouAEIOU].*').\n"
+                "- Do not use numbers from inside the text string"
+                "as regex or replacement."
+            )
 
     prompt = f"""Extract the argument values
         from the user request for the function.
@@ -53,6 +63,7 @@ def llm_extract_parameters(
 
         CRITICAL: Only use parameter names that exist in the definition
         ({'\n'.join(allowed_keys)}). Do NOT invent new parameters.
+        {regex_hint}
 
         User request:
         {user_request}
@@ -63,7 +74,7 @@ def llm_extract_parameters(
     tokens = src.encode(prompt)[0].tolist()
     generated = []
 
-    for _ in range(30):
+    for _ in range(45):
         logits = src.get_logits_from_input_ids(tokens)
         next_token = max(
             range(len(logits)),
@@ -80,8 +91,10 @@ def llm_extract_parameters(
 
     raw_params: Dict[str, Any] = {}
     if out is not None:
+        raw_json_str = out.group()
+        raw_json_str = re.sub(r'\\(?![/"bfnrtu])', r'\\\\', raw_json_str)
         try:
-            parsed = json.loads(out.group())
+            parsed = json.loads(raw_json_str, strict=False)
             if isinstance(parsed, dict):
                 raw_params = parsed
         except json.JSONDecodeError:

@@ -1,5 +1,3 @@
-MAIN = src/__main__.py
-
 PROJECT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 CACHE_DIR := $(PROJECT_DIR)/../cache
 PYTHON = python3
@@ -30,7 +28,7 @@ run:
 	clear
 	@UV_CACHE_DIR=$(CACHE_DIR) \
 	HF_HOME=$(HF_CACHE_DIR) \
-	uv run $(MAIN)
+	uv run -m src 
 
 clean:
 	@rm -rf __pycache__

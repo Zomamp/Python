@@ -1,4 +1,4 @@
-from utils import constrained_
+from .utils import constrained_
 from llm_sdk import Small_LLM_Model  # type: ignore
 from typing import Any
 

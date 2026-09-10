@@ -1,6 +1,6 @@
 import sys
 try:
-    from important import main
+    from .important import main
     from sys import exit
     import time
 except Exception as e:
@@ -9,18 +9,14 @@ except Exception as e:
 
 if __name__ == "__main__":
     try:
-
         begin = time.time()
         main()
         end = time.time()
         result = end - begin
-        if result >= 200:
+        if result >= 300:
             print("\nOh no ! the program take a lot of time 😕 "
                   f"=> \033[031m{result}\033[0m")
-        elif result <= 50:
-            print("\n😄 Felicitation the program is over at "
-                  f"=> \033[033m{result}\033[0m")
-        elif result <= 30:
+        else:
             print("\n🙌🎉 Congratulation "
                   f"=> \033[032m{result}\033[0m")
 

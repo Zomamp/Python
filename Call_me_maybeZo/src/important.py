@@ -1,8 +1,9 @@
 from llm_sdk import Small_LLM_Model  # type: ignore
 import json
-from utils import llm_extract_parameters
-from generator import generate_token
-import models
+from .utils import llm_extract_parameters
+from .generator import generate_token
+from .models import FunctionPrompt, FunctionCall
+import argparse
 import sys
 from typing import Any, Never, Literal
 try:
@@ -12,18 +13,43 @@ except Exception as e:
     sys.exit(1)
 
 
+def parse_argument() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--functions_definition",
+        type=str,
+        default="./data/input/functions_definition.json"
+    )
+
+    parser.add_argument(
+        "--input",
+        type=str,
+        default="./data/input/function_calling_tests.json"
+    )
+
+    parser.add_argument(
+        "--output",
+        type=str,
+        default="./data/output/function_calling_results.json"
+    )
+
+    return parser.parse_args()
+
+
 def main() -> Any:
     try:
         src = Small_LLM_Model()
+        args = parse_argument()
 
         try:
             with open(
-                "./data/input/functions_definition.json"
+                args.functions_definition, "r"
             ) as file:
                 functions = json.load(file)
 
             with open(
-                "./data/input/function_calling_tests.json"
+                args.input, "r"
             ) as file:
                 user_requests = json.load(file)
         except json.decoder.JSONDecodeError as e:
@@ -55,13 +81,14 @@ def main() -> Any:
 
         for item in user_requests:
 
-            prompt_pydantic = models.FunctionPrompt(**item)
+            prompt_pydantic = FunctionPrompt(**item)
 
             user_request = prompt_pydantic.prompt
 
             if not user_request:
                 print(
                     "\n\033[032m"
+                    "███████████████████████████"
                     "██████████████████████████████████████████████████\033[0m"
                     )
                 print("\n\033[035m👉 Prompt:", user_request, "\n\033[0m")
@@ -100,6 +127,7 @@ def main() -> Any:
 
             print(
                 "\n\033[032m"
+                "███████████████████████████"
                 "██████████████████████████████████████████████████\033[0m"
                 )
 
@@ -181,7 +209,7 @@ def main() -> Any:
                 selected_function
             )
 
-            result = models.FunctionCall(
+            result = FunctionCall(
                 prompt=user_request,
                 name=function_name,
                 parameters=parameters
@@ -193,11 +221,12 @@ def main() -> Any:
 
             print(
                 "\n\033[032m"
+                "███████████████████████████"
                 "██████████████████████████████████████████████████\033[0m"
                 )
 
             with open(
-                "./data/output/function_calling_results.json", "w"
+                args.output, "w"
                     ) as file_output:
                 json.dump(results, file_output, indent=2)
 
