@@ -25,7 +25,6 @@ lint-strict:
 	@python3 -m flake8 --exclude=.venv,__pycache__,.mypy_cache src
 
 run:
-	clear
 	@mkdir -p data/output
 	@UV_CACHE_DIR=$(CACHE_DIR) \
 	HF_HOME=$(HF_CACHE_DIR) \

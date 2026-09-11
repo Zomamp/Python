@@ -34,6 +34,8 @@
         </pre>
     <p>
         <strong style="color: bisque">make install</strong> for the installation of dependencies and the download of all <strong>uv cache</strong>
+        <img src="src/img/make_install.png">
         <br>
         <strong style="color: bisque">make run</strong> for downloading the <strong>hugging_face_cache</strong> and running of the program
+        <img src="src/img/make_run.png">
     </p>
