@@ -166,3 +166,6 @@ def main() -> None:
     except ValueError as e:
         print(e)
         sys.exit(1)
+    except Exception as e:
+        print(e)
+        sys.exit(1)
