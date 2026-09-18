@@ -1,3 +1,4 @@
+"""initialisation for the import."""
 from .important import main
 from .utils import constrained_, llm_extract_parameters
 from .generator import generate_token

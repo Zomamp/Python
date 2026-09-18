@@ -12,8 +12,9 @@ HF_CACHE_DIR := $(PROJECT_DIR)/../huggingface-cache
 all: run
 
 install:
-	@UV_CACHE_DIR=$(CACHE_DIR) uv add torch transformers huggingface-hub pydantic llm-sdk mypy flake8
-	@UV_CACHE_DIR=$(CACHE_DIR) uv pip install pydantic mypy flake8
+	@mkdir -p data/output
+	@UV_CACHE_DIR=$(CACHE_DIR) uv add torch transformers huggingface-hub pydantic llm-sdk mypy flake8 flake8-docstrings
+	@UV_CACHE_DIR=$(CACHE_DIR) uv pip install pydantic mypy flake8 flake8-docstrings
 	@UV_CACHE_DIR=$(CACHE_DIR) uv sync
 
 lint:
@@ -25,7 +26,6 @@ lint-strict:
 	@python3 -m flake8 --exclude=.venv,__pycache__,.mypy_cache src
 
 run:
-	@mkdir -p data/output
 	@UV_CACHE_DIR=$(CACHE_DIR) \
 	HF_HOME=$(HF_CACHE_DIR) \
 	uv run -m src 

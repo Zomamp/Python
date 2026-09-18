@@ -1,201 +1,138 @@
-from llm_sdk import Small_LLM_Model  # type: ignore
-import json
-from .utils import llm_extract_parameters
-from .generator import generate_token
-from .models import FunctionPrompt, FunctionCall
+"""Main entrypoint for function calling execution."""
+
 import argparse
+import json
 import sys
-from typing import Any, Never, Literal
-try:
-    from pydantic import ValidationError
-except Exception as e:
-    print(e)
-    sys.exit(1)
+from typing import Any, Dict, List
+from pydantic import ValidationError
+from llm_sdk import Small_LLM_Model  # type: ignore
+
+from .generator import generate_token
+from .models import FunctionCall, FunctionPrompt, FunctionDefinition
+from .utils import llm_extract_parameters
+from pathlib import Path
 
 
-def parse_argument() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Guided Function Calling LLM Engine")
 
     parser.add_argument(
         "--functions_definition",
         type=str,
-        default="./data/input/functions_definition.json"
+        default="./data/input/functions_definition.json",
+        help="Path to functions definition JSON file"
     )
-
     parser.add_argument(
         "--input",
         type=str,
-        default="./data/input/function_calling_tests.json"
+        default="./data/input/function_calling_tests.json",
+        help="Path to test input prompts JSON file"
     )
-
     parser.add_argument(
         "--output",
         type=str,
-        default="./data/output/function_calling_results.json"
+        default="./data/output/function_calling_results.json",
+        help="Path to save execution output"
     )
 
     return parser.parse_args()
 
 
-def main() -> Any:
+def main() -> None:
+    """Execute the full function calling pipeline."""
     try:
         src = Small_LLM_Model()
-        args = parse_argument()
+        args = parse_arguments()
 
         try:
-            with open(
-                args.functions_definition, "r"
-            ) as file:
-                functions = json.load(file)
+            with open(args.functions_definition, "r", encoding="utf-8") as f:
+                raw_function: List[Dict[str, Any]] = json.load(f)
+            functions = [
+                FunctionDefinition(**func_def) for func_def in raw_function
+                ]
 
-            with open(
-                args.input, "r"
-            ) as file:
-                user_requests = json.load(file)
-        except json.decoder.JSONDecodeError as e:
-            print(e)
-            exit(1)
+            with open(args.input, "r", encoding="utf-8") as f:
+                user_requests: List[Dict[str, Any]] = json.load(f)
 
-        function_tokens = {}
+        except (FileNotFoundError, json.JSONDecodeError) as err:
+            print(f"Error reading input files: {err}")
+            sys.exit(1)
+        except ValidationError as e:
+            for er in e.errors():
+                print(er['msg'])
+                sys.exit(1)
+        function_tokens: Dict[str, List[int]] = {}
+        for func in functions:
+            name = func.name
+            function_tokens[name] = src.encode(name)[0].tolist()
 
-        results = []
-
-        print("\033[035m ____  ____  _     _           _      "
-              "_____      _      ____ ___  _ ____  _____\033[0m\n"
-              "\033[036m/   _\\/  _ \\/ \\   / \\         / \\__/|"
-              "/  __/     / \\__/|/  _ \\\\  \\///  __\\/  __/\033[0m\n"
-              "|  /  | / \\|| |   | |   _____ | |\\/|||  "
-              "\\ _____ | |\\/||| / \\| \\  / | | //|  \\  \n"
-              "|  \\__| |-||| |_/\\| |_/\\\\____\\| |  |||  "
-              "/_\\____\\| |  ||| |-|| / /  | |_\\\\|  /_ \n"
-              "\033[035m\\____/\\_/ \\|\\____/\\____/      "
-              "\\_/  \\|\\____\\     \\_/  \\|\\_/ \\|"
-              "/_/   \\____/\\____\\\n\033[0m")
-
-        for function in functions:
-            name = function["name"]
-
-            function_tokens[name] = (
-                src.encode(name)[0].tolist()
-            )
+        results: List[Dict[str, Any]] = []
 
         for item in user_requests:
-
-            prompt_pydantic = FunctionPrompt(**item)
-
-            user_request = prompt_pydantic.prompt
+            try:
+                prompt_pydantic = FunctionPrompt(**item)
+                user_request = prompt_pydantic.prompt
+            except ValidationError as e:
+                for i in e.errors():
+                    print(i['msg'])
 
             if not user_request:
-                print(
-                    "\n\033[032m"
-                    "███████████████████████████"
-                    "██████████████████████████████████████████████████\033[0m"
-                    )
-                print("\n\033[035m👉 Prompt:", user_request, "\n\033[0m")
-                resulting: dict[
-                    str,
-                    dict[Never, Never] | Literal[''] | None] = {
+                empty_call: Dict[str, Any] = {
                     "prompt": user_request,
                     "name": None,
                     "parameters": {}
                 }
-
-                results.append(resulting)
-
-                print(
-                    json.dumps(
-                        resulting,
-                        indent=2
-                    )
-                )
-
+                results.append(empty_call)
                 continue
 
             prompt = (
-                f"Functions: {json.dumps(functions)}\n"
+                f"Functions: {json.dumps(raw_function)}\n"
                 f"User request: {user_request}\n"
                 "Function name:"
             )
-
             tokens = src.encode(prompt)[0].tolist()
 
-            print(
-                "\n\033[032m"
-                "███████████████████████████"
-                "██████████████████████████████████████████████████\033[0m"
-                )
+            first_tokens = {ids[0] for ids in function_tokens.values()}
+            next_token = generate_token(src, tokens, list(first_tokens))
 
-            print(
-                "\n\033[035m👉 Prompt:", user_request, "\n\033[0m"
-                )
-
-            first_tokens = set()
-
-            for ids in function_tokens.values():
-                first_tokens.add(ids[0])
-
-            generated = []
-
-            next_token = generate_token(
-                src,
-                tokens,
-                list(first_tokens)
-            )
-
-            generated.append(next_token)
-
-            candidates = []
-
-            for name, ids in function_tokens.items():
-
-                if ids[0] == next_token:
-                    candidates.append((name, ids))
+            candidates = [
+                (name, ids)
+                for name, ids in function_tokens.items()
+                if ids[0] == next_token
+            ]
 
             position = 1
-
             while len(candidates) > 1:
+                allowed_next = {
+                    ids[position]
+                    for _, ids in candidates
+                    if position < len(ids)
+                }
 
-                allowed = set()
+                if not allowed_next:
+                    break
 
-                for name, ids in candidates:
-
-                    if position < len(ids):
-                        allowed.add(ids[position])
-
-                next_token = generate_token(
-                    src,
-                    tokens,
-                    list(allowed)
-                )
-
-                generated.append(next_token)
-
-                new_candidates = []
-
-                for name, ids in candidates:
-
-                    if (
-                        position < len(ids)
-                        and ids[position] == next_token
-                    ):
-                        new_candidates.append((name, ids))
-
-                candidates = new_candidates
-
+                next_token = generate_token(src, tokens, list(allowed_next))
+                candidates = [
+                    (name, ids)
+                    for name, ids in candidates
+                    if position < len(ids) and ids[position] == next_token
+                ]
                 position += 1
 
-            if len(candidates) != 1:
-                print("Impossible guy!!!")
+            if not candidates:
                 continue
 
-            function_name = candidates[0][0]
+            selected_function_name = candidates[0][0]
+            selected_function: FunctionDefinition | None = next(
+                (f for f in functions if f.name == selected_function_name),
+                None
+            )
 
-            selected_function = None
-
-            for function in functions:
-                if function["name"] == function_name:
-                    selected_function = function
-                    break
+            if not selected_function:
+                continue
 
             parameters = llm_extract_parameters(
                 src,
@@ -205,32 +142,27 @@ def main() -> Any:
 
             result = FunctionCall(
                 prompt=user_request,
-                name=function_name,
+                name=selected_function_name,
                 parameters=parameters
             )
-
             results.append(result.model_dump())
+            print(result)
 
-            print(result.model_dump_json(indent=2))
+        output = Path(args.output)
+        output.parent.mkdir(parents=True, exist_ok=True)
 
-            print(
-                "\n\033[032m"
-                "███████████████████████████"
-                "██████████████████████████████████████████████████\033[0m"
-                )
-
-            with open(
-                args.output, "w"
-                    ) as file_output:
-                json.dump(results, file_output, indent=2)
+        with open(args.output, "w", encoding="utf-8") as file_output:
+            json.dump(results, file_output, indent=2)
 
     except KeyboardInterrupt:
-        print("\033[031mProgram Stopped\033[0m")
-
-    except ValidationError as e:
-        for error in e.errors():
-            print(f"We have an error {error['msg']} => {error['input']}")
-        exit(1)
-    except json.decoder.JSONDecodeError as e:
+        print("\nProgram execution stopped by user.")
+        sys.exit(0)
+    except ValidationError as err:
+        print(f"Pydantic Validation Error: {err}")
+        sys.exit(1)
+    except IndexError as e:
         print(e)
-        exit(1)
+        sys.exit(1)
+    except ValueError as e:
+        print(e)
+        sys.exit(1)

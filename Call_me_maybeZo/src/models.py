@@ -1,27 +1,30 @@
-from typing import Any
-import sys
-try:
-    from pydantic import BaseModel
-except Exception as e:
-    print(e)
-    sys.exit(1)
+"""Data models for Function Calling and evaluation schemas."""
+
+from typing import Any, Optional
+from pydantic import BaseModel, ConfigDict
 
 
-class Function_definition(BaseModel):
-    """Description anle zavatra ilaina rehetra aloha"""
+class FunctionDefinition(BaseModel):
+    """Schema representing a function declaration."""
+
     name: str
     description: str
     parameters: dict[str, dict[str, Any]]
     returns: dict[str, Any]
+    model_config = ConfigDict(extra='forbid')
 
 
 class FunctionPrompt(BaseModel):
-    """Just a prompt keys in the dict"""
+    """Input prompt format."""
+
     prompt: str
+    model_config = ConfigDict(extra='forbid')
 
 
 class FunctionCall(BaseModel):
-    """Represent a generated function call."""
+    """Output format representing a generated function call."""
+
     prompt: str
-    name: str | None
+    name: Optional[str]
     parameters: dict[str, Any]
+    model_config = ConfigDict(extra='forbid')
