@@ -11,14 +11,14 @@ class FunctionDefinition(BaseModel):
     description: str
     parameters: dict[str, dict[str, Any]]
     returns: dict[str, Any]
-    model_config = ConfigDict(extra='forbid')
+    model_config = ConfigDict(extra='forbid', strict=False)
 
 
 class FunctionPrompt(BaseModel):
     """Input prompt format."""
 
     prompt: str
-    model_config = ConfigDict(extra='forbid')
+    model_config = ConfigDict(extra='forbid', strict=False)
 
 
 class FunctionCall(BaseModel):
@@ -27,4 +27,4 @@ class FunctionCall(BaseModel):
     prompt: str
     name: Optional[str]
     parameters: dict[str, Any]
-    model_config = ConfigDict(extra='forbid')
+    model_config = ConfigDict(extra='forbid', strict=False)

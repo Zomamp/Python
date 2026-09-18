@@ -15,26 +15,22 @@ from pathlib import Path
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Guided Function Calling LLM Engine")
+    parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--functions_definition",
+        '--functions_definition',
         type=str,
         default="./data/input/functions_definition.json",
-        help="Path to functions definition JSON file"
     )
     parser.add_argument(
-        "--input",
+        '--input',
         type=str,
         default="./data/input/function_calling_tests.json",
-        help="Path to test input prompts JSON file"
     )
     parser.add_argument(
-        "--output",
+        '--output',
         type=str,
         default="./data/output/function_calling_results.json",
-        help="Path to save execution output"
     )
 
     return parser.parse_args()

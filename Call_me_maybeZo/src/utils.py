@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from .models import FunctionDefinition
 from llm_sdk import Small_LLM_Model  # type: ignore
 
-ALLOWED_TYPES = {"number", "string", "bool", "floats"}
+ALLOWED_TYPES = {"number", "string", "bool", "float", "integer"}
 
 
 def constrained_(logits: List[float], allowed: List[int]) -> List[float]:
@@ -28,10 +28,21 @@ def validate_and_cast(val: Any, expected_type: str) -> Optional[Any]:
 
     if expected_type == "number":
         if isinstance(val, (int, float)) and not isinstance(val, bool):
-            return val
+            return float(val)
         if isinstance(val, str):
             try:
                 num = float(val)
+                return num if num.is_integer() else num
+            except ValueError:
+                return None
+        return None
+
+    if expected_type == "integer":
+        if isinstance(val, int) and not isinstance(val, bool):
+            return int(val)
+        if isinstance(val, str):
+            try:
+                num = int(val)
                 return num if num.is_integer() else num
             except ValueError:
                 return None
