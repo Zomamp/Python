@@ -84,7 +84,7 @@ def llm_extract_parameters(
         "1. Extract parameters matching the schema strictly.\n"
         "2. RegEx patterns MUST use syntax classes:\n"
         r"   - NUMBERS/DIGITS -> '([0-9])+'\\n"
-        r"   - VOWELS -> '([aeiouAEIOU])'\\n"
+        r"   - VOWELS -> '(([aeiouAEIOU]))'\\n"
         "3. Output valid JSON object only.\n\n"
         "JSON Arguments:\n{"
     )
