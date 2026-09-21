@@ -117,7 +117,7 @@ def llm_extract_parameters(
 
     final_params: Dict[str, Any] = {}
     for key, spec in allowed_params.items():
-        expected_type = spec.get("type", "string")
+        expected_type = spec.get("type", "\033[031mstring\033[0m")
         raw_val = raw_params.get(key)
         final_params[key] = validate_and_cast(raw_val, expected_type)
 

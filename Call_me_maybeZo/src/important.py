@@ -142,7 +142,7 @@ def main() -> None:
                 parameters=parameters
             )
             results.append(result.model_dump())
-            print(result)
+            print(f"\033[032m{result}\033[0m")
 
         output = Path(args.output)
         output.parent.mkdir(parents=True, exist_ok=True)
